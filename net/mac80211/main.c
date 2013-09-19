@@ -712,6 +712,17 @@ struct ieee80211_hw *ieee80211_alloc_hw(size_t priv_data_len,
 	skb_queue_head_init(&local->skb_queue);
 	skb_queue_head_init(&local->skb_queue_unreliable);
 
+	/* Create new tasklet to handle priority queue */
+
+	tasklet_init(&local->tx_prioQ_tasklet, ieee80211_tx_prioQ_pending,
+		(unsigned long)local);
+
+	/* initialize the priority queue */
+	for(i=0; i < MAX_RX_PRIOQUEUE_NUMBER; i++)
+	{
+		skb_queue_head_init(&local->skb_prioQueue[i]);
+	}
+
 	/* init dummy netdev for use w/ NAPI */
 	init_dummy_netdev(&local->napi_dev);
 
@@ -1090,6 +1101,7 @@ void ieee80211_unregister_hw(struct ieee80211_hw *hw)
 
 	tasklet_kill(&local->tx_pending_tasklet);
 	tasklet_kill(&local->tasklet);
+	tasklet_kill(&local->tx_prioQ_tasklet);
 
 	pm_qos_remove_notifier(PM_QOS_NETWORK_LATENCY,
 			       &local->network_latency_notifier);

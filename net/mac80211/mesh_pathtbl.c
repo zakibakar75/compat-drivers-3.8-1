@@ -231,7 +231,7 @@ static void prepare_for_gate(struct sk_buff *skb, char *dst_addr,
 
 	if (!(mshdr->flags & MESH_FLAGS_AE)) {
 		/* size of the fixed part of the mesh header */
-		mesh_hdrlen = 6;
+		mesh_hdrlen = MESH_HEADER_LENGTH;
 
 		/* make room for the two extended addresses */
 		skb_push(skb, 2 * ETH_ALEN);

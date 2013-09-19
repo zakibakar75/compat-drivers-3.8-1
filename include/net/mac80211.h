@@ -98,6 +98,10 @@ enum ieee80211_max_queues {
 	IEEE80211_MAX_QUEUES =		16,
 };
 
+enum ieee80211_max_rxprio_queues {
+        MAX_RX_PRIOQUEUE_NUMBER =       8,
+};
+
 #define IEEE80211_INVAL_HW_QUEUE	0xff
 
 /**

@@ -574,9 +574,18 @@ struct ieee80211s_hdr {
 	u8 flags;
 	u8 ttl;
 	__le32 seqnum;
+	u8 NumOfHops; 
+	u8 checkByte;
 	u8 eaddr1[6];
 	u8 eaddr2[6];
 } __attribute__ ((packed));
+
+/* Length of fixed variables in struct ieee80211s_hdr  */
+/* Caution: Do not change below preprocessor directive unless there is addtion 
+   of new variable or changes to ieee80211s_hdr fixed variables size. 
+   Overruling the caution will cause mesh peering unsuccessful */
+
+#define MESH_HEADER_LENGTH      0x8
 
 /* Mesh flags */
 #define MESH_FLAGS_AE_A4 	0x1

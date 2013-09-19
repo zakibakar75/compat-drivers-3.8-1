@@ -1546,7 +1546,7 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 		ndev->needed_headroom = local->tx_headroom +
 					4*6 /* four MAC addresses */
 					+ 2 + 2 + 2 + 2 /* ctl, dur, seq, qos */
-					+ 6 /* mesh */
+					+ MESH_HEADER_LENGTH /* mesh */
 					+ 8 /* rfc1042/bridge tunnel */
 					- ETH_HLEN /* ethernet hard_header_len */
 					+ IEEE80211_ENCRYPT_HEADROOM;

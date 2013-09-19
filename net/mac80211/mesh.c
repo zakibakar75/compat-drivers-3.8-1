@@ -540,7 +540,7 @@ int ieee80211_new_mesh_header(struct ieee80211s_hdr *meshhdr,
 		memcpy(meshhdr->eaddr1, addr4or5, ETH_ALEN);
 		memcpy(meshhdr->eaddr2, addr6, ETH_ALEN);
 	}
-	return 6 + aelen;
+	return MESH_HEADER_LENGTH + aelen;
 }
 
 static void ieee80211_mesh_housekeeping(struct ieee80211_sub_if_data *sdata,
@@ -613,7 +613,7 @@ void ieee80211_start_mesh(struct ieee80211_sub_if_data *sdata)
 	atomic_inc(&local->iff_allmultis);
 	ieee80211_configure_filter(local);
 
-	ifmsh->mesh_cc_id = 0;	/* Disabled */
+	ifmsh->mesh_cc_id = 1;          /* Protection for conflict in having mesh control data */
 	ifmsh->mesh_auth_id = 0;	/* Disabled */
 	/* register sync ops from extensible synchronization framework */
 	ifmsh->sync_ops = ieee80211_mesh_sync_ops_get(ifmsh->mesh_sp_id);
