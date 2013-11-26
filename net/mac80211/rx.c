@@ -2072,7 +2072,7 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 	}
 
 	mesh_hdr->NumOfHops++;
-
+	mesh_hdr->checkByte = 0x33;  /* SYED debug */
 	if (!ifmsh->mshcfg.dot11MeshForwarding)
 		goto out;
 
@@ -2092,13 +2092,9 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 	if (is_multicast_ether_addr(fwd_hdr->addr1)) {
 		IEEE80211_IFSTA_MESH_CTR_INC(ifmsh, fwded_mcast);
 		memcpy(fwd_hdr->addr2, sdata->vif.addr, ETH_ALEN);
-		/* next hop is now known, update the queue mapping */
-		skb_set_queue_mapping(fwd_skb, ieee80211_select_queue(sdata, fwd_skb));
 		ieee80211_add_pending_skb(local, fwd_skb);
 	} else if (!mesh_nexthop_lookup(fwd_skb, sdata)) {
 		IEEE80211_IFSTA_MESH_CTR_INC(ifmsh, fwded_unicast);
-		/* next hop is now known, update the queue mapping */
-		skb_set_queue_mapping(fwd_skb, ieee80211_select_queue(sdata, fwd_skb));
 		switch(mesh_hdr->NumOfHops)
 		{
 			case 1: skb_queue_tail(&local->skb_prioQueue[7], fwd_skb);
