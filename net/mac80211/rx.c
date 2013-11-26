@@ -1998,7 +1998,7 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 
 	/* make sure fixed part of mesh header is there, also checks skb len */
-	if (!pskb_may_pull(rx->skb, hdrlen + 6))
+	if (!pskb_may_pull(rx->skb, hdrlen + MESH_HEADER_LENGTH))
 		return RX_DROP_MONITOR;
 
 	mesh_hdr = (struct ieee80211s_hdr *) (skb->data + hdrlen);
@@ -2071,6 +2071,8 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 		goto out;
 	}
 
+	mesh_hdr->NumOfHops++;
+	mesh_hdr->checkByte = 0x33;  /* SYED debug */
 	if (!ifmsh->mshcfg.dot11MeshForwarding)
 		goto out;
 
@@ -2090,9 +2092,33 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 	if (is_multicast_ether_addr(fwd_hdr->addr1)) {
 		IEEE80211_IFSTA_MESH_CTR_INC(ifmsh, fwded_mcast);
 		memcpy(fwd_hdr->addr2, sdata->vif.addr, ETH_ALEN);
+		ieee80211_add_pending_skb(local, fwd_skb);
 	} else if (!mesh_nexthop_lookup(fwd_skb, sdata)) {
 		IEEE80211_IFSTA_MESH_CTR_INC(ifmsh, fwded_unicast);
-	} else {
+		switch(mesh_hdr->NumOfHops)
+		{
+			case 1: skb_queue_tail(&local->skb_prioQueue[7], fwd_skb);
+				break;
+			case 2: skb_queue_tail(&local->skb_prioQueue[6], fwd_skb);
+				break;
+			case 3: skb_queue_tail(&local->skb_prioQueue[5], fwd_skb);
+				break;
+			case 4: skb_queue_tail(&local->skb_prioQueue[4], fwd_skb);
+				break;
+			case 5: skb_queue_tail(&local->skb_prioQueue[3], fwd_skb); 
+				break;
+			case 6: skb_queue_tail(&local->skb_prioQueue[2], fwd_skb);
+				break;
+			case 7: skb_queue_tail(&local->skb_prioQueue[1], fwd_skb);
+				break;
+			case 8: skb_queue_tail(&local->skb_prioQueue[0], fwd_skb);
+				break;
+			default:skb_queue_tail(&local->skb_prioQueue[0], fwd_skb);
+				break;
+		}
+		tasklet_schedule(&local->tx_prioQ_tasklet);
+	} 
+	else {
 		/* unable to resolve next hop */
 		mesh_path_error_tx(ifmsh->mshcfg.element_ttl, fwd_hdr->addr3,
 				   0, reason, fwd_hdr->addr2, sdata);
@@ -2100,10 +2126,8 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 		kfree_skb(fwd_skb);
 		return RX_DROP_MONITOR;
 	}
-
 	IEEE80211_IFSTA_MESH_CTR_INC(ifmsh, fwded_frames);
-	ieee80211_add_pending_skb(local, fwd_skb);
- out:
+out:
 	if (is_multicast_ether_addr(hdr->addr1) ||
 	    sdata->dev->flags & IFF_PROMISC)
 		return RX_CONTINUE;

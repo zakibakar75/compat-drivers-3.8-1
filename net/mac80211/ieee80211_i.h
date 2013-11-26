@@ -982,6 +982,9 @@ struct ieee80211_local {
 	struct sk_buff_head skb_queue;
 	struct sk_buff_head skb_queue_unreliable;
 
+	struct tasklet_struct tx_prioQ_tasklet;
+	struct sk_buff_head skb_prioQueue[MAX_RX_PRIOQUEUE_NUMBER];
+
 	/*
 	 * Internal FIFO queue which is shared between multiple rx path
 	 * stages. Its main task is to provide a serialization mechanism,
@@ -1399,6 +1402,7 @@ static inline bool ieee80211_sdata_running(struct ieee80211_sub_if_data *sdata)
 /* tx handling */
 void ieee80211_clear_tx_pending(struct ieee80211_local *local);
 void ieee80211_tx_pending(unsigned long data);
+void ieee80211_tx_prioQ_pending(unsigned long data);
 netdev_tx_t ieee80211_monitor_start_xmit(struct sk_buff *skb,
 					 struct net_device *dev);
 netdev_tx_t ieee80211_subif_start_xmit(struct sk_buff *skb,

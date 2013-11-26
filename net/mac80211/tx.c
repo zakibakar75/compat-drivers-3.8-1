@@ -2268,6 +2268,36 @@ void ieee80211_tx_pending(unsigned long data)
 	rcu_read_unlock();
 }
 
+
+void ieee80211_tx_prioQ_pending(unsigned long data)
+{
+        struct ieee80211_local *local = (struct ieee80211_local *) data;
+        struct sk_buff *skb;
+        int i;
+
+        /* check if queue empty, if not empty take out from head and send to add pending skb */
+        for (i = 0; i < MAX_RX_PRIOQUEUE_NUMBER; i++)
+        {
+
+                while (!skb_queue_empty(&local->skb_prioQueue[i]))
+                {
+                        struct sk_buff *skb = __skb_dequeue(&local->skb_prioQueue[i]);
+                        struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+
+                        if (WARN_ON(!info->control.vif))
+                        {
+                                kfree_skb(skb);
+                                continue;
+                        }
+
+                        ieee80211_add_pending_skb(local, skb);
+                }
+
+        }
+
+}
+
+
 /* functions for drivers to get certain frames */
 
 static void ieee80211_beacon_add_tim(struct ieee80211_sub_if_data *sdata,

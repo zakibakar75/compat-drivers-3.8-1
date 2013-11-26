@@ -319,11 +319,11 @@ unsigned int ieee80211_get_mesh_hdrlen(struct ieee80211s_hdr *meshhdr)
 	switch (ae) {
 	default:
 	case 0:
-		return 6;
+		return 8;
 	case MESH_FLAGS_AE_A4:
-		return 12;
+		return 14;
 	case MESH_FLAGS_AE_A5_A6:
-		return 18;
+		return 20;
 	}
 }
 EXPORT_SYMBOL(ieee80211_get_mesh_hdrlen);
